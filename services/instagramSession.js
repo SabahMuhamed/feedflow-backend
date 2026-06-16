@@ -1,73 +1,58 @@
 const supabase =
     require("./supabase");
 
-async function connectInstagram(
-    username
+export async function connectInstagram(
+    username: string,
+    sessionCookie: string
 ) {
 
     try {
 
-        const {
-            data,
-            error,
-        } = await supabase
-            .from(
-                "instagram_accounts"
-            )
-            .upsert([
-                {
-                    instagram_username:
-                        username,
-
-                    status:
-                        "connected",
-
-                    automation_status:
-                        "stopped",
-
-                    session_connected:
-                        true,
-
-                    session_file:
-                        "simulation",
-
-                    connected_at:
-                        new Date()
-                            .toISOString(),
-
-                    last_sync:
-                        new Date()
-                            .toISOString(),
-                },
-            ])
-            .select();
-
-        if (error)
-            throw error;
-
         console.log(
-            `✅ Simulated Instagram connection for ${username}`
+            "Calling:",
+            `${API_URL}/instagram/connect`
         );
 
-        return {
-            success: true,
-            simulated: true,
-            account:
-                data?.[0] || null,
-        };
+        const response =
+            await fetch(
+                `${API_URL}/instagram/connect`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    body: JSON.stringify({
+                        username,
+                        session_cookie:
+                            sessionCookie,
+                    }),
+                }
+            );
+
+        console.log(
+            "Status:",
+            response.status
+        );
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Response:",
+            data
+        );
+
+        return data;
 
     } catch (err) {
 
-        console.error(
-            "Simulation connect error:",
+        console.log(
+            "FETCH ERROR:",
             err
         );
 
-        return {
-            success: false,
-            error:
-                err.message,
-        };
+        throw err;
 
     }
 
