@@ -94,8 +94,9 @@ async function runScheduler() {
                         job.creator_username,
                     interest:
                         job.interest,
+
                     action:
-                        job.action,
+                        `${job.action}`,
                 },
             ]);
 
