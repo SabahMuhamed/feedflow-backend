@@ -1,58 +1,64 @@
 const supabase =
     require("./supabase");
 
-export async function connectInstagram(
-    username: string,
-    sessionCookie: string
+async function connectInstagram(
+    username
 ) {
 
     try {
 
-        console.log(
-            "Calling:",
-            `${API_URL}/instagram/connect`
-        );
-
-        const response =
-            await fetch(
-                `${API_URL}/instagram/connect`,
+        const {
+            data,
+            error,
+        } = await supabase
+            .from(
+                "instagram_accounts"
+            )
+            .upsert([
                 {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                    },
-                    body: JSON.stringify({
+                    instagram_username:
                         username,
-                        session_cookie:
-                            sessionCookie,
-                    }),
-                }
-            );
 
-        console.log(
-            "Status:",
-            response.status
-        );
+                    status:
+                        "connected",
 
-        const data =
-            await response.json();
+                    automation_status:
+                        "stopped",
 
-        console.log(
-            "Response:",
-            data
-        );
+                    session_connected:
+                        true,
 
-        return data;
+                    session_file:
+                        "simulation",
+
+                    connected_at:
+                        new Date()
+                            .toISOString(),
+
+                    last_sync:
+                        new Date()
+                            .toISOString(),
+                },
+            ])
+            .select();
+
+        if (error)
+            throw error;
+
+        return {
+            success: true,
+            simulated: true,
+            account:
+                data?.[0] || null,
+        };
 
     } catch (err) {
 
-        console.log(
-            "FETCH ERROR:",
-            err
-        );
-
-        throw err;
+        return {
+            success: false,
+            error:
+                err.message,
+        };
 
     }
 
@@ -97,7 +103,7 @@ async function verifySession(
                 true,
         };
 
-    } catch (err) {
+    } catch {
 
         return {
             valid: false,
